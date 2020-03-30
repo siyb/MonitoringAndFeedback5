@@ -38,7 +38,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(MainActivity.this, PrimeService.class);
-                stopService(i);
+                i.putExtra(PrimeService.STOP,true);
+                startForegroundService(i);
             }
         });
     }

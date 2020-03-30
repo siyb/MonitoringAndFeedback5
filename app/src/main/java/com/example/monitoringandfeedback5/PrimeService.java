@@ -16,9 +16,10 @@ import androidx.core.app.NotificationCompat;
 import java.util.Arrays;
 
 public class PrimeService extends Service {
-    public static final String ACTION_PRIME_RESULT =  "com.example.monitoringandfeedback.PrimeService.ACTION_PRIME_RESULT";
-    public static final String PRIME =  "com.example.monitoringandfeedback.PrimeService.PRIME";
+    public static final String ACTION_PRIME_RESULT = "com.example.monitoringandfeedback.PrimeService.ACTION_PRIME_RESULT";
+    public static final String PRIME = "com.example.monitoringandfeedback.PrimeService.PRIME";
 
+    public static final String STOP = "com.example.monitoringandfeedback.PrimeService.STOP";
     public static final String COUNT_TO = "com.example.monitoringandfeedback.PrimeService.COUNT_TO";
 
     private static final String CHANNEL_ID = "com.example.monitoringandfeedback.PrimeService.CHANNEL_ID";
@@ -78,29 +79,39 @@ public class PrimeService extends Service {
                     isPrime[j] = false;
                 }
             }
+            if (Thread.interrupted()) {
+                break;
+            }
         }
     }
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
-        Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-        Notification notification = new NotificationCompat
-                .Builder(this, actualChannelId)
-                .setContentTitle(getString(R.string.content_title))
-                .setContentText(getString(R.string.content_text))
-                .setContentIntent(pendingIntent)
-                .build();
-        startForeground(NOTIFICATION_ID, notification);
-
-        workerThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                primeNumbers(intent.getIntExtra(COUNT_TO, 1000));
+        if (intent.getBooleanExtra(STOP, false)) {
+            if (workerThread != null) {
+                workerThread.interrupt();
             }
-        });
-        // starting our calculation
-        workerThread.start();
+            stopSelf();
+        } else {
+            Intent notificationIntent = new Intent(this, MainActivity.class);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+            Notification notification = new NotificationCompat
+                    .Builder(this, actualChannelId)
+                    .setContentTitle(getString(R.string.content_title))
+                    .setContentText(getString(R.string.content_text))
+                    .setContentIntent(pendingIntent)
+                    .build();
+            startForeground(NOTIFICATION_ID, notification);
+
+            workerThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    primeNumbers(intent.getIntExtra(COUNT_TO, 1000));
+                }
+            });
+            // starting our calculation
+            workerThread.start();
+        }
         return START_NOT_STICKY;
     }
 }
