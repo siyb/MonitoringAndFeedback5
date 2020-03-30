@@ -3,6 +3,7 @@ package com.example.monitoringandfeedback5;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -16,18 +17,22 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         TextView tv = findViewById(R.id.display);
-
-        final Intent i = new Intent(MainActivity.this, PrimeService.class);
+        final EditText et = findViewById(R.id.input);
 
         findViewById(R.id.start).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent i = new Intent(MainActivity.this, PrimeService.class);
+                String input = et.getText().toString();
+                if (input.equals("")) input = "1000";
+                i.putExtra(PrimeService.COUNT_TO, Integer.parseInt(input));
                 startForegroundService(i);
             }
         });
         findViewById(R.id.stop).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent i = new Intent(MainActivity.this, PrimeService.class);
                 stopService(i);
             }
         });
