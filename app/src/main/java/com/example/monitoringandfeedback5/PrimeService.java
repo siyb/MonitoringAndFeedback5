@@ -16,10 +16,16 @@ import androidx.core.app.NotificationCompat;
 import java.util.Arrays;
 
 public class PrimeService extends Service {
+    public static final String ACTION_PRIME_RESULT =  "com.example.monitoringandfeedback.PrimeService.ACTION_PRIME_RESULT";
+    public static final String PRIME =  "com.example.monitoringandfeedback.PrimeService.PRIME";
+
     public static final String COUNT_TO = "com.example.monitoringandfeedback.PrimeService.COUNT_TO";
+
     private static final String CHANNEL_ID = "com.example.monitoringandfeedback.PrimeService.CHANNEL_ID";
     private static final int NOTIFICATION_ID = 124123;
+
     private String actualChannelId;
+    private Thread workerThread;
 
     @Nullable
     @Override
@@ -65,6 +71,9 @@ public class PrimeService extends Service {
         for (int i = 2; i <= n; i++) {
             if (isPrime[i]) {
                 System.out.println(Thread.currentThread().getName() + " - PRIME " + i);
+                Intent intent = new Intent(ACTION_PRIME_RESULT);
+                intent.putExtra(PRIME, i);
+                sendBroadcast(intent);
                 for (int j = i; j <= n; j += i) {
                     isPrime[j] = false;
                 }
@@ -84,14 +93,14 @@ public class PrimeService extends Service {
                 .build();
         startForeground(NOTIFICATION_ID, notification);
 
-        Thread t = new Thread(new Runnable() {
+        workerThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 primeNumbers(intent.getIntExtra(COUNT_TO, 1000));
             }
         });
         // starting our calculation
-        t.start();
+        workerThread.start();
         return START_NOT_STICKY;
     }
 }
