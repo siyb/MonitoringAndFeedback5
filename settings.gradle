@@ -1,0 +1,2 @@
+rootProject.name='MonitoringAndFeedback5'
+include ':app'
